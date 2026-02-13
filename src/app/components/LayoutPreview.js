@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useLayoutEffect, useRef, useState, useCallback, useEffect } from 'react';
+import React, { useLayoutEffect, useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import * as d3 from 'd3';
 import { polygonHull } from 'd3-polygon';
 import ClipperLib from 'clipper-lib';
@@ -417,15 +417,19 @@ export default function LayoutPreview({
       const dy = event.movementY;
 
       if (direction.includes('right')) {
+        const currentX = itemRect.left - parent.left;
+        const maxAvailableWidth = parent.width - currentX;
         newWidth = Math.min(
           itemRect.width + dx,
-          parent.width - itemRect.left - MARGIN
+          maxAvailableWidth
         );
       }
       if (direction.includes('bottom')) {
+        const currentY = itemRect.top - parent.top;
+        const maxAvailableHeight = parent.height - currentY;
         newHeight = Math.min(
           itemRect.height + dy,
-          parent.height - itemRect.top - MARGIN
+          maxAvailableHeight
         );
       }
 
@@ -450,7 +454,7 @@ export default function LayoutPreview({
     clampImageInsideLayout(itemId);
   };
 
-  const clampImageInsideLayout = (itemId) => {
+  const clampImageInsideLayout = useCallback((itemId) => {
     const ref = itemRefs.current[itemId]?.current;
     if (!ref || !innerRef.current) return;
 
@@ -460,11 +464,15 @@ export default function LayoutPreview({
     let newLeft = parseFloat(ref.style.left) || 0;
     let newTop = parseFloat(ref.style.top) || 0;
 
-    const overflowRight = newLeft + itemRect.width - parentRect.width + MARGIN;
+    // Calculate overflow: right edge should not exceed parentWidth - MARGIN
+    const maxRight = parentRect.width - MARGIN;
+    const overflowRight = (newLeft + itemRect.width) - maxRight;
     if (overflowRight > 0) {
       newLeft = Math.max(MARGIN, newLeft - overflowRight);
     }
-    const overflowBottom = newTop + itemRect.height - parentRect.height + MARGIN;
+    
+    const maxBottom = parentRect.height - MARGIN;
+    const overflowBottom = (newTop + itemRect.height) - maxBottom;
     if (overflowBottom > 0) {
       newTop = Math.max(MARGIN, newTop - overflowBottom);
     }
@@ -485,15 +493,42 @@ export default function LayoutPreview({
       return item;
     });
     if (onUpdateItems) onUpdateItems(updatedItems);
-  };
+  }, [items, onUpdateItems]);
 
-  function clampImageWidth(item, x, layoutWidth, margin, userChosenWidthStr) {
+  function clampImageWidth(item, x, innerWidth, userChosenWidthStr) {
     const userChosenWidth = parseInt(userChosenWidthStr, 10) || 0;
-    const maxAvailable = layoutWidth - margin - x;
+    const maxAvailable = (innerWidth - MARGIN) - x;
     if (maxAvailable < 0) return "0px"; 
     const clamped = Math.min(userChosenWidth, maxAvailable);
     return clamped + "px";
   }
+
+  // Track image sizes to detect when they change (not positions)
+  const imageSizes = useMemo(() => {
+    return items
+      .filter(item => item.type === 'bilde' && item.value)
+      .map(item => `${item.id}:${item.value}`)
+      .join('|');
+  }, [items]);
+
+  // Clamp images when their size changes via slider
+  useLayoutEffect(() => {
+    // Only run if imageSizes actually exists
+    if (!imageSizes) return;
+    
+    const imageItems = items.filter(item => item.type === 'bilde' && item.value);
+    imageItems.forEach(item => {
+      const ref = itemRefs.current[item.id]?.current;
+      if (ref && innerRef.current) {
+        // Use requestAnimationFrame to ensure DOM has been updated with new image width
+        requestAnimationFrame(() => {
+          clampImageInsideLayout(item.id);
+        });
+      }
+    });
+    // Deliberately omitting items from dependency array - we only want to run when imageSizes changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageSizes, clampImageInsideLayout]);
 
   return (
     <div>
@@ -559,7 +594,8 @@ export default function LayoutPreview({
                 const w = splitted[1]; 
                 dynamicWidth = `${w}px`;
               }
-              const maxWidth = width - x - MARGIN;
+              const innerWidth = width - 2 * MARGIN;
+              const maxWidth = (innerWidth - MARGIN) - x;
 
               return (
                 <div
@@ -620,7 +656,7 @@ export default function LayoutPreview({
                         clampImageInsideLayout(item.id);
                       }}
                       style={{
-                        width: clampImageWidth(item, x, width, MARGIN, dynamicWidth),
+                        width: clampImageWidth(item, x, width - 2 * MARGIN, dynamicWidth),
                         borderRadius: '8px',
                         cursor: 'grab',
                       }}
