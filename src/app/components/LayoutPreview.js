@@ -57,7 +57,7 @@ export default function LayoutPreview({
       A4: {
         width: 595,
         height: 842,
-        overskrift1: { x: 231, y: 175, fontSize: '48px' },
+        overskrift1: { x: 230.5, y: 175, fontSize: '48px' },
         overskrift2: { x: 20, y: 250, fontSize: '48px' },
         overskrift3: { x: 20, y: 300, fontSize: '48px' },
         tekst: { x: 295, y: 260, fontSize: '18px' },
@@ -67,7 +67,7 @@ export default function LayoutPreview({
       '1080x1080': {
         width: 540,
         height: 540,
-        overskrift1: { x: 176, y: 115, fontSize: '48px' },
+        overskrift1: { x: 175.5, y: 115, fontSize: '48px' },
         overskrift2: { x: 20, y: 250, fontSize: '48px' },
         overskrift3: { x: 20, y: 300, fontSize: '48px' },
         tekst: { x: 240, y: 190, fontSize: '18px' },
@@ -77,7 +77,7 @@ export default function LayoutPreview({
       '1080x1920': {
         width: 540,
         height: 960,
-        overskrift1: { x: 176, y: 200, fontSize: '48px' },
+        overskrift1: { x: 175.5, y: 200, fontSize: '48px' },
         overskrift2: { x: 20, y: 250, fontSize: '48px' },
         overskrift3: { x: 20, y: 300, fontSize: '48px' },
         tekst: { x: 240, y: 285, fontSize: '18px' },
@@ -87,7 +87,7 @@ export default function LayoutPreview({
       '1080x1350': {
         width: 540,
         height: 675,
-        overskrift1: { x: 176, y: 160, fontSize: '48px' },
+        overskrift1: { x: 175.5, y: 160, fontSize: '48px' },
         overskrift2: { x: 20, y: 250, fontSize: '48px' },
         overskrift3: { x: 20, y: 300, fontSize: '48px' },
         tekst: { x: 240, y: 245, fontSize: '18px' },
@@ -97,7 +97,7 @@ export default function LayoutPreview({
       '1920x1080': {
         width: 960,
         height: 540,
-        overskrift1: { x: 596, y: 110, fontSize: '48px' },
+        overskrift1: { x: 595.5, y: 110, fontSize: '48px' },
         overskrift2: { x: 20, y: 250, fontSize: '48px' },
         overskrift3: { x: 20, y: 300, fontSize: '48px' },
         tekst: { x: 660, y: 205, fontSize: '18px' },
